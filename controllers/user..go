@@ -15,6 +15,7 @@ import (
 )
 
 type SignupRequest struct {
+	Username string `json:"username"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
 }
@@ -53,10 +54,16 @@ func Signup(ctx *gin.Context) {
 		return
 	}
 
-	user := models.User{Email: req.Email, PasswordHash: hash}
+	user := models.User{Email: req.Email, PasswordHash: hash, Username: req.Username}
 	err = db.Create(&user)
 	if err != nil {
 		if errors.Is(err, gorm.ErrDuplicatedKey) {
+			var dupUserWithEmail models.User
+			result := db.FindOneWhere(&models.User{Email: req.Email}, &dupUserWithEmail)
+			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+				badRequest(ctx, "UsernameAlreadyInUse")
+				return
+			}
 			badRequest(ctx, "EmailAlreadyInUse")
 			return
 		}
@@ -84,5 +91,4 @@ func Login(ctx *gin.Context) {
 
 	signedAccessToken, signedRefreshToken := createTokenPair(user.ID)
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
-
 }

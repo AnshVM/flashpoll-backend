@@ -39,6 +39,7 @@ func Create(val interface{}) error {
 	return db.Create(val).Error
 }
 
-func FindOneWhere(query *models.User, dest *models.User) *gorm.DB {
+// more types to be added as more db models are created
+func FindOneWhere[T models.User](query *T, dest *T) *gorm.DB {
 	return db.Where(query).First(dest)
 }
