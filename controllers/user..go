@@ -34,20 +34,20 @@ func first[T any](val T, _ error) T {
 	return val
 }
 
+var maxCookieAge = 24 * 60 * 60
+
 func Signup(ctx *gin.Context) {
 	var req SignupRequest
-
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		invalidRequestBody(ctx)
 	}
-
 	hash, err := bcrypt.GenerateFromPassword(
 		[]byte(req.Password),
 		first(strconv.Atoi(os.Getenv("BCRYPT_COST"))),
 	)
 	if err != nil {
 		if errors.Is(err, bcrypt.ErrPasswordTooLong) {
-			badRequest(ctx, "PasswordTooLong")
+			badRequest(ctx, "Password too long")
 			return
 		}
 		unknownError(ctx)
@@ -61,10 +61,10 @@ func Signup(ctx *gin.Context) {
 			var dupUserWithEmail models.User
 			result := db.FindOneWhere(&models.User{Email: req.Email}, &dupUserWithEmail)
 			if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-				badRequest(ctx, "UsernameAlreadyInUse")
+				badRequest(ctx, "DuplicateUsername")
 				return
 			}
-			badRequest(ctx, "EmailAlreadyInUse")
+			badRequest(ctx, "DuplicateEmail")
 			return
 		}
 		unknownError(ctx)
@@ -90,5 +90,7 @@ func Login(ctx *gin.Context) {
 	}
 
 	signedAccessToken, signedRefreshToken := createTokenPair(user.ID)
+	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", "localhost", true, true)
+	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", "localhost", true, true)
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
 }
