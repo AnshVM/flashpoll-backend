@@ -1,8 +1,10 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -19,6 +21,10 @@ func invalidRequestBody(ctx *gin.Context) {
 
 func unknownError(ctx *gin.Context) {
 	badRequest(ctx, "UnknownError")
+}
+
+func unauthorized(ctx *gin.Context) {
+	badRequest(ctx, "Unauthorized")
 }
 
 type Claims struct {
@@ -51,4 +57,28 @@ func createTokenPair(id uint) (string, string) {
 		panic(err)
 	}
 	return signedAccessToken, signedRefreshToken
+}
+
+func getAccessToken(ctx *gin.Context) (string, error) {
+	header := ctx.Request.Header
+	authHeader := strings.Split(header.Get("Authorization"), " ")
+
+	if len(authHeader) < 2 {
+		return "", errors.New("ErrInvalidAuthorizationHeader")
+	}
+
+	return authHeader[1], nil
+}
+
+func parseToken(tokenString string, secret_key []byte) (Claims, error) {
+	var claims Claims
+	_, err := jwt.ParseWithClaims(tokenString, &claims, func(token *jwt.Token) (interface{}, error) {
+		return secret_key, nil
+	})
+
+	if err != nil {
+		return claims, err
+	}
+
+	return claims, nil
 }

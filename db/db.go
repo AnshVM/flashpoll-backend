@@ -10,7 +10,7 @@ import (
 	"gorm.io/gorm"
 )
 
-var db *gorm.DB
+var DB *gorm.DB
 var err error
 
 func CreateConnection() error {
@@ -24,22 +24,28 @@ func CreateConnection() error {
 		"TimeZone=Asia/Kolkata",
 	}, " ")
 
-	db, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 
 	if err != nil {
 		return err
 	}
 
-	db.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.Option{})
+	DB.AutoMigrate(&models.Poll{})
 
 	return nil
 }
 
 func Create(val interface{}) error {
-	return db.Create(val).Error
+	return DB.Create(val).Error
 }
 
 // more types to be added as more db models are created
 func FindOneWhere[T models.User](query *T, dest *T) *gorm.DB {
-	return db.Where(query).First(dest)
+	return DB.Where(query).First(dest)
+}
+
+func FindById[T models.User](ID uint, dest *T) *gorm.DB {
+	return DB.First(dest, ID)
 }

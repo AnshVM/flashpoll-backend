@@ -91,6 +91,8 @@ func Login(ctx *gin.Context) {
 
 	signedAccessToken, signedRefreshToken := createTokenPair(user.ID)
 	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", "localhost", true, true)
+
 	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", "localhost", true, true)
+
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
 }
