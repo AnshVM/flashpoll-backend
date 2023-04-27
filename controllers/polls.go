@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"os"
 
+	"strconv"
+
 	"github.com/AnshVM/flashpoll-backend/db"
 	"github.com/AnshVM/flashpoll-backend/models"
 	"github.com/gin-gonic/gin"
@@ -60,4 +62,42 @@ func CreatePoll(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, gin.H{"id": poll.ID})
 
+}
+
+type OptionRes struct {
+	Name  string
+	Votes uint
+}
+
+type GetPollResponse struct {
+	Title   string
+	Options []OptionRes
+}
+
+func GetPollById(ctx *gin.Context) {
+	pollID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
+
+	if err != nil {
+		invalidRequestBody(ctx)
+		return
+	}
+
+	var poll models.Poll
+	db.FindById(uint(pollID), &poll)
+
+	var options []models.Option
+	db.DB.Model(&poll).Association("Options").Find(&options)
+
+	var resOptions []OptionRes
+
+	for _, v := range options {
+		resOptions = append(resOptions, OptionRes{Name: v.Name, Votes: v.Count})
+	}
+
+	res := GetPollResponse{
+		Title:   poll.Title,
+		Options: resOptions,
+	}
+
+	ctx.JSON(http.StatusOK, res)
 }

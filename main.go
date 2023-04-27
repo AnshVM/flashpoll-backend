@@ -27,6 +27,7 @@ func main() {
 	router.POST("/login", controllers.Login)
 	router.POST("/poll", controllers.CreatePoll)
 	router.GET("/refresh", controllers.RefreshTokens)
+	router.GET("/poll/:id", controllers.GetPollById)
 
 	router.Run(":8080")
 }
