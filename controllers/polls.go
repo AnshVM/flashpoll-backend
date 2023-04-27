@@ -20,12 +20,14 @@ func CreatePoll(ctx *gin.Context) {
 
 	if err != nil {
 		unauthorized(ctx)
+		return
 	}
 
 	claims, err := parseToken(accessToken, []byte(os.Getenv("ACCESS_TOKENS_SECRET_KEY")))
 
 	if err != nil {
 		unauthorized(ctx)
+		return
 	}
 
 	var req CreatePollRequest

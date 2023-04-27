@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -92,6 +93,31 @@ func Login(ctx *gin.Context) {
 	signedAccessToken, signedRefreshToken := createTokenPair(user.ID)
 	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", "localhost", true, true)
 
+	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", "localhost", true, true)
+
+	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
+}
+
+func RefreshTokens(ctx *gin.Context) {
+
+	refreshToken, err := ctx.Cookie("refreshToken")
+	fmt.Print(refreshToken)
+
+	if err != nil {
+		unauthorized(ctx)
+		return
+	}
+
+	claims, err := parseToken(refreshToken, []byte(os.Getenv("REFRESH_TOKENS_SECRET_KEY")))
+
+	if err != nil {
+		unauthorized(ctx)
+		return
+	}
+
+	signedAccessToken, signedRefreshToken := createTokenPair(claims.UserID)
+
+	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", "localhost", true, true)
 	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", "localhost", true, true)
 
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
