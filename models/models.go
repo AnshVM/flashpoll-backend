@@ -7,7 +7,8 @@ type User struct {
 	Username     string `gorm:"unique"`
 	Email        string `gorm:"unique"`
 	PasswordHash []byte
-	Polls        []Poll `gorm:"foreignKey:User"`
+	PollsCreated []Poll   `gorm:"foreignKey:User"`
+	Votes        []Option `gorm:"many2many:user_votes"`
 }
 
 type Poll struct {

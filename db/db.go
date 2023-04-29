@@ -46,6 +46,6 @@ func FindOneWhere[T models.User](query *T, dest *T) *gorm.DB {
 	return DB.Where(query).First(dest)
 }
 
-func FindById[T models.User | models.Poll](ID uint, dest *T) *gorm.DB {
-	return DB.First(dest, ID)
+func FindById[T models.User | models.Poll | models.Option](ID uint, dest *T) error {
+	return DB.First(dest, ID).Error
 }
