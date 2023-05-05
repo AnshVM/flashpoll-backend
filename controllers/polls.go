@@ -138,6 +138,15 @@ func SubmitVote(ctx *gin.Context) {
 		invalidRequestBody(ctx)
 		return
 	}
+
+	var votedOption models.Option
+	err = db.DB.Model(&user).Association("Votes").Find(&votedOption, "poll = ?", option.Poll)
+
+	if votedOption.ID != 0 {
+		ctx.JSON(http.StatusConflict, "ALREADY_VOTED")
+		return
+	}
+
 	db.DB.Model(&user).Association("Votes").Append(&option)
 
 	option.Count = option.Count + 1
