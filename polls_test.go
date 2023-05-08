@@ -18,8 +18,9 @@ type OptionRes struct {
 }
 
 type GetPollResponse struct {
-	Title   string      `json:"title"`
-	Options []OptionRes `json:"options"`
+	Title      string      `json:"title"`
+	Options    []OptionRes `json:"options"`
+	TotalVotes uint        `json:"totalVotes"`
 }
 
 func login(r *gin.Engine, email string, password string) string {
@@ -50,6 +51,8 @@ func submitVote(r *gin.Engine, optionID uint, accessToken string) {
 
 func TestVoteSubmission(t *testing.T) {
 
+	POLL_ID := 8
+
 	godotenv.Load()
 
 	err := db.CreateConnection()
@@ -61,12 +64,12 @@ func TestVoteSubmission(t *testing.T) {
 	r := router.SetupRouter()
 	accessToken := login(r, "test@mail.com", "test")
 
-	pollData := getPollById(r, 7)
+	pollData := getPollById(r, uint(POLL_ID))
 
 	votesBefore := pollData.Options[0].Votes
 	submitVote(r, pollData.Options[0].ID, accessToken)
 
-	pollData = getPollById(r, 7)
+	pollData = getPollById(r, uint(POLL_ID))
 	votesAfter := pollData.Options[0].Votes
 
 	assert.Equal(t, 1, votesAfter-votesBefore)

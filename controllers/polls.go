@@ -62,17 +62,40 @@ func CreatePoll(ctx *gin.Context) {
 }
 
 type OptionRes struct {
-	Name  string `json:"name"`
-	Votes uint   `json:"votes"`
-	ID    uint   `json:"id"`
+	Name         string  `json:"name"`
+	Votes        uint    `json:"votes"`
+	ID           uint    `json:"id"`
+	VotesPercent float32 `json:"votesPercent"`
 }
 
 type GetPollResponse struct {
-	Title   string      `json:"title"`
-	Options []OptionRes `json:"options"`
+	Title      string      `json:"title"`
+	Options    []OptionRes `json:"options"`
+	TotalVotes uint        `json:"totalVotes"`
+	UserVote   OptionRes   `json:"userVote"`
 }
 
 func GetPollById(ctx *gin.Context) {
+	accessToken, err := getAccessToken(ctx)
+
+	if err != nil {
+		unauthorized(ctx)
+		return
+	}
+
+	claims, err := parseToken(accessToken, []byte(os.Getenv("ACCESS_TOKENS_SECRET_KEY")))
+
+	if err != nil {
+		unauthorized(ctx)
+		return
+	}
+
+	var user models.User
+	if err := db.FindById(claims.UserID, &user); err != nil {
+		unauthorized(ctx)
+		return
+	}
+
 	pollID, err := strconv.ParseUint(ctx.Param("id"), 10, 32)
 
 	if err != nil {
@@ -87,14 +110,28 @@ func GetPollById(ctx *gin.Context) {
 	db.DB.Model(&poll).Association("Options").Find(&options)
 
 	var resOptions []OptionRes
+	var totalVotes uint = 0
 
 	for _, v := range options {
 		resOptions = append(resOptions, OptionRes{Name: v.Name, Votes: v.Count, ID: v.ID})
+		totalVotes = totalVotes + v.Count
+	}
+
+	for i, v := range resOptions {
+		resOptions[i].VotesPercent = float32((v.Votes / totalVotes) * 100)
 	}
 
 	res := GetPollResponse{
-		Title:   poll.Title,
-		Options: resOptions,
+		Title:      poll.Title,
+		Options:    resOptions,
+		TotalVotes: totalVotes,
+	}
+
+	var option models.Option
+	getUserVoteForPoll(&user, poll.ID, &option)
+
+	if option.ID != 0 {
+		res.UserVote = OptionRes{ID: option.ID, Name: option.Name, Votes: option.Count}
 	}
 
 	ctx.JSON(http.StatusOK, res)
@@ -140,8 +177,7 @@ func SubmitVote(ctx *gin.Context) {
 	}
 
 	var votedOption models.Option
-	err = db.DB.Model(&user).Association("Votes").Find(&votedOption, "poll = ?", option.Poll)
-
+	getUserVoteForPoll(&user, option.Poll, &votedOption)
 	if votedOption.ID != 0 {
 		ctx.JSON(http.StatusConflict, "ALREADY_VOTED")
 		return
@@ -156,4 +192,8 @@ func SubmitVote(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, "VOTE_SUBMITTED")
 
+}
+
+func getUserVoteForPoll(user *models.User, pollID uint, dest *models.Option) {
+	db.DB.Model(&user).Association("Votes").Find(dest, "poll = ?", pollID)
 }

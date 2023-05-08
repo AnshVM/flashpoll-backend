@@ -11,6 +11,7 @@ func SetupRouter() *gin.Engine {
 	router := gin.Default()
 	config := cors.DefaultConfig()
 	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	router.Use(cors.New(config))
 
 	router.POST("/signup", controllers.Signup)
