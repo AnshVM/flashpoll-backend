@@ -20,6 +20,7 @@ func SetupRouter() *gin.Engine {
 	router.GET("/refresh", controllers.RefreshTokens)
 	router.GET("/poll/:id", controllers.GetPollById)
 	router.POST("/poll/submit", controllers.SubmitVote)
+	router.POST("logout", controllers.Logout)
 
 	return router
 }

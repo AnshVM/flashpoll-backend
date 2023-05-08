@@ -122,3 +122,9 @@ func RefreshTokens(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
 }
+
+func Logout(ctx *gin.Context) {
+	ctx.SetCookie("accessToken", "", -1, "/", "localhost", true, true)
+	ctx.SetCookie("refreshToken", "", -1, "/", "localhost", true, true)
+	ctx.JSON(http.StatusOK, "USER_LOGGED_OUT")
+}
