@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func request(r *gin.Engine, method string, url string, payload map[string]any, headers map[string]string) []byte {
+func request(r *gin.Engine, method string, url string, payload any, headers map[string]string) []byte {
 	w := httptest.NewRecorder()
 	payloadBytes, _ := json.Marshal(payload)
 

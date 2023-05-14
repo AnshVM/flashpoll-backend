@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -10,26 +9,15 @@ import (
 
 	"github.com/AnshVM/flashpoll-backend/db"
 	"github.com/AnshVM/flashpoll-backend/models"
+	"github.com/AnshVM/flashpoll-backend/types"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
-type SignupRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-type LoginResponse struct {
-	AccessToken  string `json:"accessToken"`
-	RefreshToken string `json:"refreshToken"`
-}
+type SignupRequest = types.SignupRequest
+type LoginRequest = types.LoginRequest
+type LoginResponse = types.LoginResponse
 
 func first[T any](val T, _ error) T {
 	return val
@@ -101,7 +89,6 @@ func Login(ctx *gin.Context) {
 func RefreshTokens(ctx *gin.Context) {
 
 	refreshToken, err := ctx.Cookie("refreshToken")
-	fmt.Print(refreshToken)
 
 	if err != nil {
 		unauthorized(ctx)

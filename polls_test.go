@@ -6,22 +6,14 @@ import (
 
 	"github.com/AnshVM/flashpoll-backend/db"
 	"github.com/AnshVM/flashpoll-backend/router"
+	"github.com/AnshVM/flashpoll-backend/types"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
-type OptionRes struct {
-	Name  string `json:"name"`
-	Votes uint   `json:"votes"`
-	ID    uint   `json:"id"`
-}
-
-type GetPollResponse struct {
-	Title      string      `json:"title"`
-	Options    []OptionRes `json:"options"`
-	TotalVotes uint        `json:"totalVotes"`
-}
+type OptionResponse = types.OptionResponse
+type GetPollResponse = types.GetPollResponse
 
 func login(r *gin.Engine, email string, password string) string {
 
