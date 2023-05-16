@@ -15,12 +15,12 @@ var err error
 
 func CreateConnection() error {
 	dsn := strings.Join([]string{
-		"host=localhost",
-		"user=postgres",
+		fmt.Sprintf("host=%s", os.Getenv("DB_HOST")),
+		fmt.Sprintf("user=%s", os.Getenv("DB_USER")),
 		fmt.Sprintf("password=%s", os.Getenv("DB_PASSWORD")),
-		"dbname=flashpoll",
-		"port=5432",
-		"sslmode=disable",
+		fmt.Sprintf("dbname=%s", os.Getenv("DB_NAME")),
+		fmt.Sprintf("port=%s", os.Getenv("DB_PORT")),
+		"sslmode=require",
 		"TimeZone=Asia/Kolkata",
 	}, " ")
 
