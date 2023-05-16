@@ -1,6 +1,7 @@
 package router
 
 import (
+	"os"
 	"strconv"
 
 	"github.com/AnshVM/flashpoll-backend/controllers"
@@ -13,7 +14,7 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{"http://localhost:3000"}
+	config.AllowOrigins = []string{os.Getenv("CLIENT_URL")}
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	router.Use(cors.New(config))
 
