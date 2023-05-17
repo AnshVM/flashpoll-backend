@@ -18,5 +18,5 @@ func main() {
 
 	router := router.SetupRouter()
 
-	router.Run(":8080")
+	router.Run(":80")
 }
