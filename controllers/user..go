@@ -104,14 +104,14 @@ func RefreshTokens(ctx *gin.Context) {
 
 	signedAccessToken, signedRefreshToken := createTokenPair(claims.UserID)
 
-	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", "localhost", true, true)
-	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", "localhost", true, true)
+	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", os.Getenv("HOST"), true, true)
+	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", os.Getenv("HOST"), true, true)
 
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
 }
 
 func Logout(ctx *gin.Context) {
-	ctx.SetCookie("accessToken", "", -1, "/", "localhost", true, true)
-	ctx.SetCookie("refreshToken", "", -1, "/", "localhost", true, true)
+	ctx.SetCookie("accessToken", "", -1, "/", os.Getenv("HOST"), true, true)
+	ctx.SetCookie("refreshToken", "", -1, "/", os.Getenv("HOST"), true, true)
 	ctx.JSON(http.StatusOK, "USER_LOGGED_OUT")
 }
