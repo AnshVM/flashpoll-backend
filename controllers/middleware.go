@@ -12,7 +12,6 @@ func Auth(ctx *gin.Context) {
 	var user models.User
 	accessToken, err := getAccessToken(ctx)
 	if err != nil {
-		unauthorized(ctx)
 		return
 	}
 	claims, err := parseToken(accessToken, []byte(os.Getenv("ACCESS_TOKENS_SECRET_KEY")))
