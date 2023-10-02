@@ -1,7 +1,6 @@
 package router
 
 import (
-	"os"
 	"strconv"
 
 	"github.com/AnshVM/flashpoll-backend/controllers"
@@ -14,27 +13,30 @@ func SetupRouter() *gin.Engine {
 
 	router := gin.Default()
 	config := cors.DefaultConfig()
-	config.AllowOrigins = []string{os.Getenv("CLIENT_URL")}
+	config.AllowOrigins = []string{"*"}
 	config.AllowHeaders = append(config.AllowHeaders, "Authorization")
 	router.Use(cors.New(config))
 
 	wsHub := ws.NewHub()
 	go wsHub.Run()
 
-	router.POST("/signup", controllers.Signup)
-	router.POST("/login", controllers.Login)
-	router.POST("/poll", controllers.Auth, controllers.CreatePoll)
-	router.GET("/refresh", controllers.RefreshTokens)
-	router.GET("/poll/:id", controllers.Auth, controllers.GetPollById)
-	router.POST("logout", controllers.Logout)
+	api := router.Group("/api")
+	{
+		api.POST("/signup", controllers.Signup)
+		api.POST("/login", controllers.Login)
+		api.POST("/poll", controllers.Auth, controllers.CreatePoll)
+		api.GET("/refresh", controllers.RefreshTokens)
+		api.GET("/poll/:id", controllers.Auth, controllers.GetPollById)
+		api.POST("logout", controllers.Logout)
 
-	router.GET("/ws/:id", func(ctx *gin.Context) {
-		pollID, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
-		ws.ServeWs(wsHub, ctx.Writer, ctx.Request, uint(pollID))
-	})
-	router.POST("/poll/submit", controllers.Auth, func(ctx *gin.Context) {
-		controllers.SubmitVote(ctx, wsHub)
-	})
+		api.GET("/ws/:id", func(ctx *gin.Context) {
+			pollID, _ := strconv.ParseUint(ctx.Param("id"), 10, 32)
+			ws.ServeWs(wsHub, ctx.Writer, ctx.Request, uint(pollID))
+		})
+		api.POST("/poll/submit", controllers.Auth, func(ctx *gin.Context) {
+			controllers.SubmitVote(ctx, wsHub)
+		})
+	}
 
 	return router
 }

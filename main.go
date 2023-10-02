@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
 	"github.com/AnshVM/flashpoll-backend/db"
@@ -20,5 +21,5 @@ func main() {
 
 	router := router.SetupRouter()
 
-	router.Run(os.Getenv("PORT"))
+	router.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }
