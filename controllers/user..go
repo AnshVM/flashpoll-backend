@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 	"strconv"
@@ -15,6 +16,7 @@ import (
 	"gorm.io/gorm"
 )
 
+type RefreshRequest = types.RefreshRequest
 type SignupRequest = types.SignupRequest
 type LoginRequest = types.LoginRequest
 type LoginResponse = types.LoginResponse
@@ -87,14 +89,24 @@ func Login(ctx *gin.Context) {
 
 func RefreshTokens(ctx *gin.Context) {
 
-	refreshToken, err := ctx.Cookie("refreshToken")
+	fmt.Println("hererer")
+	// refreshToken, err := ctx.Cookie("refreshToken")
 
-	if err != nil {
-		unauthorized(ctx)
+	// if err != nil {
+	// 	unauthorized(ctx)
+	// 	return
+	// }
+
+	var req RefreshRequest
+
+	if err := ctx.ShouldBindJSON(&req); err != nil {
+		invalidRequestBody(ctx)
 		return
 	}
 
-	claims, err := parseToken(refreshToken, []byte(os.Getenv("REFRESH_TOKENS_SECRET_KEY")))
+	claims, err := parseToken(req.RefreshToken, []byte(os.Getenv("REFRESH_TOKENS_SECRET_KEY")))
+
+	fmt.Printf("%v", claims)
 
 	if err != nil {
 		unauthorized(ctx)
@@ -105,7 +117,8 @@ func RefreshTokens(ctx *gin.Context) {
 
 	ctx.SetCookie("accessToken", signedAccessToken, maxCookieAge, "/", os.Getenv("SERVER_DOMAIN"), true, true)
 	ctx.SetCookie("refreshToken", signedRefreshToken, maxCookieAge*10, "/", os.Getenv("SERVER_DOMAIN"), true, true)
-
+	fmt.Println("accessToken")
+	fmt.Println(signedAccessToken)
 	ctx.JSON(http.StatusOK, LoginResponse{AccessToken: signedAccessToken, RefreshToken: signedRefreshToken})
 }
 

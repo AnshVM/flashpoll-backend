@@ -44,6 +44,9 @@ func (c *Client) write() {
 
 func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request, pollID uint) {
 	upgrader.CheckOrigin = func(r *http.Request) bool {
+		if os.Getenv("CLIENT_URL") == "" {
+			return true
+		}
 		return r.Header["Origin"][0] == os.Getenv("CLIENT_URL")
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)

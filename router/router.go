@@ -25,7 +25,7 @@ func SetupRouter() *gin.Engine {
 		api.POST("/signup", controllers.Signup)
 		api.POST("/login", controllers.Login)
 		api.POST("/poll", controllers.Auth, controllers.CreatePoll)
-		api.GET("/refresh", controllers.RefreshTokens)
+		api.POST("/refresh", controllers.RefreshTokens)
 		api.GET("/poll/:id", controllers.Auth, controllers.GetPollById)
 		api.POST("logout", controllers.Logout)
 
