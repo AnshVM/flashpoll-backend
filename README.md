@@ -1,2 +1,7 @@
-Start DB
-docker exec -ti NAME_OF_CONTAINER psql -U YOUR_POSTGRES_USERNAME
+# Flashpoll backend
+Backend for flashpoll, a web app for creating polls with realtime monitoring
+# Setup
+
+    $ git clone https://github.com/AnshVM/flashpoll-backend.git
+    $ cd flashpoll-backend
+    $ go run main.go
